@@ -21,13 +21,15 @@ class DatabaseService {
   }
 
   List<UserDataModel> _userListFromSnapshot(QuerySnapshot snapshot) {
+
     return snapshot.docs.map((doc) {
       return UserDataModel(
         name: doc['name'] ?? '',
         date: doc['date'] ?? '',
-        image: doc['image'] ?? '',
+        imagePicked: doc['imagePicked'] ?? '',
       );
     }).toList();
+
   }
   Stream<List<UserDataModel>> get users {
     return userCollection.snapshots().map(_userListFromSnapshot);

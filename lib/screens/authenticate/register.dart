@@ -5,7 +5,6 @@ import 'package:firebase_internship_project/shared/loading.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 
 class Register extends StatefulWidget {
   @override
@@ -232,7 +231,7 @@ class _RegisterState extends State<Register> {
                             _dateTime == null
                                 ? 'Picked Date of Birth'
                                 : _dateTime!.toString().substring(0,10),
-                            style: TextStyle(color: Colors.black54,fontSize:
+                            style: TextStyle(color: Colors.black87,fontSize:
                             15.0),
                           ),
                         ),

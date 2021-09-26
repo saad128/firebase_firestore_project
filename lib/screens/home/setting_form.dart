@@ -60,34 +60,6 @@ class _SettingFormState extends State<SettingForm> {
                     }),
                   ),
                   SizedBox(height: 10.0),
-
-                  // Container(
-                  //   width: double.infinity,
-                  //   height: 52.0,
-                  //   child: GestureDetector(
-                  //     onTap: (){
-                  //
-                  //     child: Text(dateTime.toString()),
-                  //   ),
-                  // ),
-                  // TextFormField(
-                  //   initialValue: _updatedDate != null ?  _updatedDate
-                  //       .toString() : userDate,
-                  //   readOnly: true,
-                  //   onTap: (){
-                  //     showDatePicker(
-                  //         firstDate: DateTime(1920),
-                  //         context: context,
-                  //         initialDate: dateTime,
-                  //         lastDate: DateTime.now()
-                  //     ).then((val) {
-                  //       setState(() {
-                  //         _updatedDate = val!;
-                  //       });
-                  //     });
-                  //   },
-                  //
-                  // ),
                   Container(
                     width: double.infinity,
                     height: 52.0,
@@ -158,71 +130,3 @@ class _SettingFormState extends State<SettingForm> {
 }
 
 
-// class SearchDelegateWidget extends SearchDelegate {
-//
-//   List groupList;
-//   SearchDelegateWidget(this.groupList);
-//
-//
-//
-//   @override
-//   List<Widget> buildActions(BuildContext context) {
-//     return [
-//       IconButton(
-//         icon: Icon(Icons.clear),
-//         onPressed: () {
-//           query = '';
-//         },
-//       )
-//     ];
-//   }
-//
-//   @override
-//   Widget buildLeading(BuildContext context) {
-//     return IconButton(
-//       icon: AnimatedIcon(
-//         icon: AnimatedIcons.menu_arrow,
-//         progress: transitionAnimation,
-//       ),
-//       onPressed: () {
-//         close(context, null);
-//       },
-//     );
-//   }
-//
-//   @override
-//   Widget buildResults(BuildContext context) {
-//     return SizedBox();
-//   }
-//
-//   @override
-//   Widget buildSuggestions(BuildContext context) {
-//     final suggestionList = groupList.where((e) => e.name.toLowerCase().startsWith(query))
-//         .toList();
-//     return ListView.builder(
-//       itemCount: suggestionList.length,
-//       itemBuilder: (context, index) {
-//         return ListTile(
-//           onTap: () {
-//             print(suggestionList[index]);
-//             close(context, suggestionList[index]);
-//           },
-//           leading: Icon(Icons.location_city),
-//           title: RichText(
-//             text: TextSpan(
-//                 text: suggestionList[index].name.substring(0, query.length),
-//                 style: TextStyle(
-//                   color: Colors.black,
-//                 ),
-//                 children: [
-//                   TextSpan(
-//                     text: suggestionList[index].name.substring(query.length),
-//                     style: TextStyle(color: Colors.grey),
-//                   ),
-//                 ]),
-//           ),
-//         );
-//       },
-//     );
-//   }
-// }

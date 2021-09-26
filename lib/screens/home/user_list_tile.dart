@@ -21,7 +21,7 @@ class UserTile extends StatelessWidget {
         child: ListTile(
           leading: CircleAvatar(
             radius: 25.0,
-            backgroundImage: NetworkImage('${userDataModel!.image}'),
+            backgroundImage: NetworkImage('${userDataModel!.imagePicked}'),
           ),
           title: Text('${userDataModel!.name}'),
           subtitle: Text('${userDataModel!.date!.toDate().toString()}'),
