@@ -1,5 +1,4 @@
 import 'package:firebase_internship_project/screens/authenticate/register.dart';
-import 'package:firebase_internship_project/screens/home/home.dart';
 import 'package:firebase_internship_project/services/auth_service.dart';
 import 'package:firebase_internship_project/shared/loading.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +14,33 @@ class _SignInState extends State<SignIn> {
 
   String email = '';
   String password = '';
-  String error = '';
+  //String error = '';
   bool loading = false;
+
+  Future<void> _showMyDialog(BuildContext context) async {
+    return showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Error Message'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: [
+                  Text('Could not sign in with those credentials'),
+                  Text('Please enter valid credentials '),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,14 +107,11 @@ class _SignInState extends State<SignIn> {
                           dynamic result = await _auth
                               .signInWithEmailAndPassword(email, password);
                           if (result == null) {
+                            _showMyDialog(context);
                             setState(() {
-                              error =
-                                  "could not sign in with those credentials";
                               loading = false;
                             });
                           }
-                          Navigator.pushReplacement(context,
-                              MaterialPageRoute(builder: (context) => Home()));
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -105,13 +126,13 @@ class _SignInState extends State<SignIn> {
                       height: 12.0,
                     ),
                     // hello world
-                    Text(
-                      error,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14.0,
-                      ),
-                    ),
+                    // Text(
+                    //   error,
+                    //   style: TextStyle(
+                    //     color: Colors.white,
+                    //     fontSize: 14.0,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),

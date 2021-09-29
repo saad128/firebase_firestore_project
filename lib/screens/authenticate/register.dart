@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:firebase_internship_project/screens/home/home.dart';
 import 'package:firebase_internship_project/services/auth_service.dart';
 import 'package:firebase_internship_project/shared/loading.dart';
 import 'package:flutter/cupertino.dart';
@@ -20,10 +19,9 @@ class _RegisterState extends State<Register> {
   // text field state
   String email = '';
   String password = '';
-  String error = '';
   String name = '';
   DateTime? _dateTime;
-  
+  String? imageError;
 
   File? pickedImage;
 
@@ -39,6 +37,10 @@ class _RegisterState extends State<Register> {
       setState(() {
         pickedImage = File(image.path);
       });
+    } else {
+      setState(() {
+        imageError = 'Please select an image.';
+      });
     }
   }
 
@@ -51,6 +53,10 @@ class _RegisterState extends State<Register> {
     if (image != null) {
       setState(() {
         pickedImage = File(image.path);
+      });
+    } else {
+      setState(() {
+        imageError = 'Please select an image.';
       });
     }
   }
@@ -85,6 +91,33 @@ class _RegisterState extends State<Register> {
         );
       },
     );
+  }
+
+  // show the Dialog Box in case of error
+
+  Future<void> _showMyDialog(BuildContext context) async {
+    return showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Error Message'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: [
+                  Text('Could not sign up with those credentials'),
+                  Text('Please enter valid credentials '),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        });
   }
 
   @override
@@ -124,6 +157,7 @@ class _RegisterState extends State<Register> {
                       SizedBox(
                         height: 20.0,
                       ),
+
                       CircleAvatar(
                         radius: 45.0,
                         backgroundColor: Colors.purple[400],
@@ -181,27 +215,6 @@ class _RegisterState extends State<Register> {
                       SizedBox(
                         height: 20.0,
                       ),
-                      // TextFormField(
-                      //   validator: (val) => val!.isEmpty
-                      //       ? 'Enter the Date of Birth'
-                      //       : null,
-                      //   readOnly: true,
-                      //   decoration: InputDecoration(
-                      //     labelText: 'Select Date',
-                      //   ),
-                      //   onTap: () {
-                      //     showDatePicker(
-                      //       context: context,
-                      //       initialDate: DateTime.now(),
-                      //       firstDate: DateTime(1920),
-                      //       lastDate: DateTime.now(),
-                      //     ).then((val) {
-                      //       setState(() {
-                      //         _dateTime = val!;
-                      //       });
-                      //     });
-                      //   },
-                      // ),
                       Container(
                         width: double.infinity,
                         height: 52.0,
@@ -210,7 +223,6 @@ class _RegisterState extends State<Register> {
                           border: Border(
                               bottom: BorderSide(
                                   width: 1.0, color: Colors.black38)),
-                          //borderRadius: BorderRadius.circular(10.0),
                         ),
                         child: GestureDetector(
                           onTap: () {
@@ -230,9 +242,9 @@ class _RegisterState extends State<Register> {
                           child: Text(
                             _dateTime == null
                                 ? 'Picked Date of Birth'
-                                : _dateTime!.toString().substring(0,10),
-                            style: TextStyle(color: Colors.black87,fontSize:
-                            15.0),
+                                : _dateTime!.toString().substring(0, 10),
+                            style: TextStyle(
+                                color: Colors.black87, fontSize: 15.0),
                           ),
                         ),
                       ),
@@ -249,17 +261,11 @@ class _RegisterState extends State<Register> {
                                 await _auth.registerWithEmailAndPassword(email,
                                     password, name, _dateTime!, pickedImage!);
                             if (result == null) {
-                              setState(() {
-                                error = "Please supply valid credentials";
-                                loading = false;
-                              });
+                              _showMyDialog(context);
                             }
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Home(),
-                              ),
-                            );
+                            setState(() {
+                              loading = false;
+                            });
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -268,16 +274,6 @@ class _RegisterState extends State<Register> {
                         child: Text(
                           'Register',
                           style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 12.0,
-                      ),
-                      Text(
-                        error,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14.0,
                         ),
                       ),
                     ],

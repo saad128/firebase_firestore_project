@@ -1,5 +1,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_internship_project/models/user_data_model.dart';
 
 class DatabaseService {
 
@@ -16,6 +17,18 @@ class DatabaseService {
       'date': date,
       'imagePicked': imagePicked,
     });
+  }
+
+  Stream<List<UserDataModel>> getAllUsers() {
+    Stream<QuerySnapshot<Object?>> querySnapshot =
+    FirebaseFirestore.instance.collection('users').snapshots();
+
+    Stream<List<UserDataModel>> test = querySnapshot.map((document) {
+      return document.docs.map((e) {
+        return UserDataModel.fromJson(e.data() as Map<String, dynamic>);
+      }).toList();
+    });
+    return test;
   }
 
 }

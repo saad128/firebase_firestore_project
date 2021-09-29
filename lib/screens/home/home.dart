@@ -4,6 +4,7 @@ import 'package:firebase_internship_project/models/user_data_model.dart';
 import 'package:firebase_internship_project/models/user_model.dart';
 import 'package:firebase_internship_project/screens/authenticate/sign_in.dart';
 import 'package:firebase_internship_project/screens/home/setting_form.dart';
+import 'package:firebase_internship_project/services/database.dart';
 import 'package:firebase_internship_project/shared/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -15,20 +16,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
 
-  bool searchName = false;
-
-
-  Stream<List<UserDataModel>> getAllUsers() {
-    Stream<QuerySnapshot<Object?>> querySnapshot =
-        FirebaseFirestore.instance.collection('users').snapshots();
-
-    Stream<List<UserDataModel>> test = querySnapshot.map((document) {
-      return document.docs.map((e) {
-        return UserDataModel.fromJson(e.data() as Map<String, dynamic>);
-      }).toList();
-    });
-    return test;
-  }
+  DatabaseService _databaseService = DatabaseService();
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +40,6 @@ class _HomeState extends State<Home> {
         title: Text('Users List'),
         elevation: 0.0,
         backgroundColor: Colors.purple[400],
-        automaticallyImplyLeading: false,
         actions: [
           TextButton.icon(
             onPressed: () async {
@@ -92,7 +79,7 @@ class _HomeState extends State<Home> {
       ),
       body: StreamBuilder<List<UserDataModel>>(
         initialData: [],
-        stream: getAllUsers(),
+        stream: _databaseService.getAllUsers(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.active) {
             List<UserDataModel> userData = snapshot.data;
@@ -104,10 +91,11 @@ class _HomeState extends State<Home> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: TextField(
-                    onTap: () {
-                      showSearch(
+                    onTap: () async {
+                      final result = await showSearch<UserDataModel>(
                           context: context,
                           delegate: SearchDelegateWidget(userData));
+                      print(result);
                     },
                     decoration: InputDecoration(
                       prefixIcon: Icon(
@@ -159,6 +147,7 @@ class _HomeState extends State<Home> {
 }
 
 class SearchDelegateWidget extends SearchDelegate<UserDataModel> {
+
   List<UserDataModel> userList;
 
   SearchDelegateWidget(this.userList);
@@ -182,54 +171,143 @@ class SearchDelegateWidget extends SearchDelegate<UserDataModel> {
         icon: AnimatedIcons.menu_arrow,
         progress: transitionAnimation,
       ),
-      onPressed: () => Navigator.pop(context),
+      onPressed: () {
+       // close(context, userList.elementAt());
+        Navigator.pop(context);
+      },
     );
   }
 
   @override
   Widget buildResults(BuildContext context) {
-    final List<IsUserModel> allUserName = userList
-        .where((e) => e.name!.toLowerCase().contains(query.toLowerCase()))
-        .cast<IsUserModel>()
-        .toList();
+    final List<UserDataModel> allUserName = userList
+        .where((e) => e.name!.toLowerCase().contains(query)).toList();
+    return ListView(
+      children: allUserName.map<ListTile>((a) => ListTile(
+        title: Text(a.name!),
+        leading: Icon(Icons.person),
+        onTap: (){
+          close(context, a);
+        },
+      )).toList(),
+    );
 
-    return ListView.builder(
-        itemCount: allUserName.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text('${allUserName[index]}'),
-          );
-        });
+    // return ListView.builder(
+    //     itemCount: allUserName.length,
+    //     itemBuilder: (context, index) {
+    //       return ListTile(
+    //         title: Text('${allUserName[index]}'),
+    //         onTap: () {
+    //           //result = allUserName.elementAt(index) as String?;
+    //           // close(context, result);
+    //         },
+    //         leading: Icon(Icons.person),
+    //       );
+    //     });
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
     final suggestionList =
-        userList.where((e) => e.name!.toLowerCase().startsWith(query)).toList();
-    return ListView.builder(
-      itemCount: suggestionList.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          onTap: () {
-            print(suggestionList[index]);
-            close(context, suggestionList[index]);
-          },
-          leading: Icon(Icons.person),
-          title: RichText(
-            text: TextSpan(
-                text: suggestionList[index].name!.substring(0, query.length),
-                style: TextStyle(
-                  color: Colors.black,
+    userList.where((e) => e.name!.toLowerCase().contains(query))
+        .toList();
+
+    return ListView(
+      children: suggestionList.map<ListTile>((a) => ListTile(
+        title: RichText(
+                  text: TextSpan(
+                      text: a.name!.substring(0, query.length),
+                      style: TextStyle(
+                        color: Colors.blue,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: a.name!.substring(query.length),
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ]),
                 ),
-                children: [
-                  TextSpan(
-                    text: suggestionList[index].name!.substring(query.length),
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ]),
-          ),
-        );
-      },
+        //leading: Icon(Icons.person),
+        onTap: (){
+          query = a.name!;
+        },
+      )).toList(),
     );
+
   }
 }
+
+
+
+// build suggestion code with stream builder
+
+// return StreamBuilder<List<UserDataModel>>(
+//   stream: getAllUsers(),
+//   builder: (BuildContext context, AsyncSnapshot<List<UserDataModel>>snapshot) {
+//       if(!snapshot.hasData) {
+//         return Center(
+//           child: Text('No Data'),
+//         );
+//       }
+//       final suggestionList =
+//       snapshot.data!.where((e) => e.name!.toLowerCase().startsWith(query))
+//           .toList();
+//
+//       return ListView.builder(
+//         itemCount: suggestionList.length,
+//         itemBuilder: (context, index) {
+//           return ListTile(
+//                     onTap: () {
+//                       query = suggestionList.elementAt(index) as String;
+//                     },
+//                     leading: Icon(Icons.person),
+//                     title: RichText(
+//                       text: TextSpan(
+//                           text: suggestionList[index].name!.substring(0,
+//                               query.length),
+//                           style: TextStyle(
+//                             color: Colors.black,
+//                           ),
+//                           children: [
+//                             TextSpan(
+//                               text: suggestionList[index].name!.substring(query.length),
+//                               style: TextStyle(color: Colors.grey),
+//                             ),
+//                           ]),
+//                     ),
+//                   );
+//         },
+//       );
+//   },
+// );
+
+
+// build suggestion code with listview builder
+
+
+// return ListView.builder(
+//   itemCount: suggestionList.length,
+//   itemBuilder: (context, index) {
+//     return ListTile(
+//       onTap: () {
+//         // print(suggestionList[index]);
+//         // close(context, suggestionList[index]);
+//         query = suggestionList[index].name!;
+//       },
+//       // leading: Icon(Icons.person),
+//       title: RichText(
+//         text: TextSpan(
+//             text: suggestionList[index].name!.substring(0, query.length),
+//             style: TextStyle(
+//               color: Colors.black,
+//             ),
+//             children: [
+//               TextSpan(
+//                 text: suggestionList[index].name!.substring(query.length),
+//                 style: TextStyle(color: Colors.grey),
+//               ),
+//             ]),
+//       ),
+//     );
+//   },
+// );
