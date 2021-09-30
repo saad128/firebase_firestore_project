@@ -14,7 +14,6 @@ class _SignInState extends State<SignIn> {
 
   String email = '';
   String password = '';
-  //String error = '';
   bool loading = false;
 
   Future<void> _showMyDialog(BuildContext context) async {
@@ -122,17 +121,7 @@ class _SignInState extends State<SignIn> {
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
-                    SizedBox(
-                      height: 12.0,
-                    ),
-                    // hello world
-                    // Text(
-                    //   error,
-                    //   style: TextStyle(
-                    //     color: Colors.white,
-                    //     fontSize: 14.0,
-                    //   ),
-                    // ),
+
                   ],
                 ),
               ),

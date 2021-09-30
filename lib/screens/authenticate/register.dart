@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_internship_project/screens/home/home.dart';
 import 'package:firebase_internship_project/services/auth_service.dart';
 import 'package:firebase_internship_project/shared/loading.dart';
 import 'package:flutter/cupertino.dart';
@@ -25,6 +26,8 @@ class _RegisterState extends State<Register> {
 
   File? pickedImage;
 
+  Color? color;
+
   final _picker = ImagePicker();
 
   _pickImgFromCamera() async {
@@ -36,10 +39,6 @@ class _RegisterState extends State<Register> {
     if (image != null) {
       setState(() {
         pickedImage = File(image.path);
-      });
-    } else {
-      setState(() {
-        imageError = 'Please select an image.';
       });
     }
   }
@@ -53,10 +52,6 @@ class _RegisterState extends State<Register> {
     if (image != null) {
       setState(() {
         pickedImage = File(image.path);
-      });
-    } else {
-      setState(() {
-        imageError = 'Please select an image.';
       });
     }
   }
@@ -157,7 +152,6 @@ class _RegisterState extends State<Register> {
                       SizedBox(
                         height: 20.0,
                       ),
-
                       CircleAvatar(
                         radius: 45.0,
                         backgroundColor: Colors.purple[400],
@@ -174,6 +168,16 @@ class _RegisterState extends State<Register> {
                           },
                         ),
                       ),
+                      SizedBox(
+                        height: 10.0,
+                      ),
+                      if (pickedImage == null)
+                        Text(
+                          'Please pick the image',
+                          style: TextStyle(
+                            color: Theme.of(context).errorColor,
+                          ),
+                        ),
                       SizedBox(
                         height: 20.0,
                       ),
@@ -249,11 +253,23 @@ class _RegisterState extends State<Register> {
                         ),
                       ),
                       SizedBox(
+                        height: 10.0,
+                      ),
+                      if (_dateTime == null)
+                        Text(
+                          'Please enter the date',
+                          style: TextStyle(
+                            color: Theme.of(context).errorColor,
+                          ),
+                        ),
+                      SizedBox(
                         height: 20.0,
                       ),
                       ElevatedButton(
                         onPressed: () async {
-                          if (_formKey.currentState!.validate()) {
+                          if (_formKey.currentState!.validate() &&
+                              _dateTime != null &&
+                              pickedImage != null) {
                             setState(() {
                               loading = true;
                             });
@@ -262,6 +278,11 @@ class _RegisterState extends State<Register> {
                                     password, name, _dateTime!, pickedImage!);
                             if (result == null) {
                               _showMyDialog(context);
+                            }else{
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (BuildContext context) => Home()));
                             }
                             setState(() {
                               loading = false;

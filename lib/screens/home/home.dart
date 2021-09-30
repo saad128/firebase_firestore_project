@@ -8,6 +8,7 @@ import 'package:firebase_internship_project/services/database.dart';
 import 'package:firebase_internship_project/shared/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -15,8 +16,9 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-
   DatabaseService _databaseService = DatabaseService();
+
+  List<UserDataModel> userData = [];
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +40,7 @@ class _HomeState extends State<Home> {
       backgroundColor: Colors.purple[50],
       appBar: AppBar(
         title: Text('Users List'),
+        automaticallyImplyLeading: false,
         elevation: 0.0,
         backgroundColor: Colors.purple[400],
         actions: [
@@ -56,8 +59,11 @@ class _HomeState extends State<Home> {
               color: Colors.white,
             ),
             label: Text(
-              'logout',
-              style: TextStyle(color: Colors.white),
+              'Logout',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 17.0,
+              ),
             ),
           ),
           TextButton.icon(
@@ -71,8 +77,11 @@ class _HomeState extends State<Home> {
               color: Colors.white,
             ),
             label: Text(
-              'settings ',
-              style: TextStyle(color: Colors.white),
+              'Settings',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 17.0,
+              ),
             ),
           ),
         ],
@@ -82,72 +91,54 @@ class _HomeState extends State<Home> {
         stream: _databaseService.getAllUsers(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.active) {
-            List<UserDataModel> userData = snapshot.data;
-            return Column(
-              children: [
-                SizedBox(
-                  height: 10.0,
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  child: TextField(
-                    onTap: () async {
-                      final result = await showSearch<UserDataModel>(
-                          context: context,
-                          delegate: SearchDelegateWidget(userData));
-                      print(result);
-                    },
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(
-                        Icons.search,
-                        color: Colors.black,
+            userData = snapshot.data;
+            return ListView.builder(
+                itemCount: userData.length,
+                itemBuilder: (context, index) {
+                  UserDataModel users = userData[index];
+                  // userData = users;
+                  Timestamp timestamp = users.date!;
+                  DateTime dateTime = DateTime.parse(
+                    timestamp.toDate().toString(),
+                  );
+                  var userDate = DateFormat.yMMMd().format(dateTime);
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Card(
+                      margin: EdgeInsets.fromLTRB(20.0, 6.0, 20.0, 0),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          radius: 25.0,
+                          backgroundImage: NetworkImage(users.imagePicked!),
+                        ),
+                        title: Text(users.name!),
+                        subtitle: Text(userDate.toString()),
                       ),
-                      hintText: 'Search',
-                      hintStyle: TextStyle(color: Colors.black38),
                     ),
-                  ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                      itemCount: userData.length,
-                      itemBuilder: (context, index) {
-                        UserDataModel users = userData[index];
-                        // userData = users;
-                        Timestamp timestamp = users.date!;
-                        DateTime dateTime = DateTime.parse(
-                          timestamp.toDate().toString(),
-                        );
-                        var userDate = DateFormat.yMMMd().format(dateTime);
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Card(
-                            margin: EdgeInsets.fromLTRB(20.0, 6.0, 20.0, 0),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                radius: 25.0,
-                                backgroundImage:
-                                    NetworkImage(users.imagePicked!),
-                              ),
-                              title: Text(users.name!),
-                              subtitle: Text(userDate.toString()),
-                            ),
-                          ),
-                        );
-                      }),
-                ),
-              ],
-            );
+                  );
+                });
           } else {
             return Loading();
           }
         },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+        label: Text('Search'),
+        onPressed: () async {
+          final result = await showSearch<UserDataModel>(
+              context: context, delegate: SearchDelegateWidget(userData));
+          print(result);
+        },
+        icon: Icon(Icons.search),
+        backgroundColor: Colors.purple[400],
+        heroTag: 'searchTag',
       ),
     );
   }
 }
 
 class SearchDelegateWidget extends SearchDelegate<UserDataModel> {
-
   List<UserDataModel> userList;
 
   SearchDelegateWidget(this.userList);
@@ -170,9 +161,10 @@ class SearchDelegateWidget extends SearchDelegate<UserDataModel> {
       icon: AnimatedIcon(
         icon: AnimatedIcons.menu_arrow,
         progress: transitionAnimation,
+
       ),
       onPressed: () {
-       // close(context, userList.elementAt());
+        // close(context, userList.elementAt());
         Navigator.pop(context);
       },
     );
@@ -180,16 +172,18 @@ class SearchDelegateWidget extends SearchDelegate<UserDataModel> {
 
   @override
   Widget buildResults(BuildContext context) {
-    final List<UserDataModel> allUserName = userList
-        .where((e) => e.name!.toLowerCase().contains(query)).toList();
+    final List<UserDataModel> allUserName =
+        userList.where((e) => e.name!.toLowerCase().contains(query)).toList();
     return ListView(
-      children: allUserName.map<ListTile>((a) => ListTile(
-        title: Text(a.name!),
-        leading: Icon(Icons.person),
-        onTap: (){
-          close(context, a);
-        },
-      )).toList(),
+      children: allUserName
+          .map<ListTile>((a) => ListTile(
+                title: Text(a.name!),
+                leading: Icon(Icons.person),
+                onTap: () {
+                  close(context, a);
+                },
+              ))
+          .toList(),
     );
 
     // return ListView.builder(
@@ -209,12 +203,12 @@ class SearchDelegateWidget extends SearchDelegate<UserDataModel> {
   @override
   Widget buildSuggestions(BuildContext context) {
     final suggestionList =
-    userList.where((e) => e.name!.toLowerCase().contains(query))
-        .toList();
+        userList.where((e) => e.name!.toLowerCase().contains(query)).toList();
 
     return ListView(
-      children: suggestionList.map<ListTile>((a) => ListTile(
-        title: RichText(
+      children: suggestionList
+          .map<ListTile>((a) => ListTile(
+                title: RichText(
                   text: TextSpan(
                       text: a.name!.substring(0, query.length),
                       style: TextStyle(
@@ -227,17 +221,15 @@ class SearchDelegateWidget extends SearchDelegate<UserDataModel> {
                         ),
                       ]),
                 ),
-        //leading: Icon(Icons.person),
-        onTap: (){
-          query = a.name!;
-        },
-      )).toList(),
+                //leading: Icon(Icons.person),
+                onTap: () {
+                  query = a.name!;
+                },
+              ))
+          .toList(),
     );
-
   }
 }
-
-
 
 // build suggestion code with stream builder
 
@@ -281,9 +273,7 @@ class SearchDelegateWidget extends SearchDelegate<UserDataModel> {
 //   },
 // );
 
-
 // build suggestion code with listview builder
-
 
 // return ListView.builder(
 //   itemCount: suggestionList.length,
