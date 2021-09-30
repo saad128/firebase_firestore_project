@@ -1,9 +1,13 @@
-import 'package:firebase_internship_project/screens/authenticate/register.dart';
 import 'package:firebase_internship_project/services/auth_service.dart';
 import 'package:firebase_internship_project/shared/loading.dart';
 import 'package:flutter/material.dart';
 
 class SignIn extends StatefulWidget {
+
+  final Function toggleView;
+
+  SignIn({required this.toggleView});
+
   @override
   _SignInState createState() => _SignInState();
 }
@@ -16,30 +20,6 @@ class _SignInState extends State<SignIn> {
   String password = '';
   bool loading = false;
 
-  Future<void> _showMyDialog(BuildContext context) async {
-    return showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Error Message'),
-            content: SingleChildScrollView(
-              child: ListBody(
-                children: [
-                  Text('Could not sign in with those credentials'),
-                  Text('Please enter valid credentials '),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, 'OK'),
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,8 +35,9 @@ class _SignInState extends State<SignIn> {
               actions: [
                 TextButton.icon(
                   onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => Register()));
+                    // Navigator.push(context,
+                    //     MaterialPageRoute(builder: (context) => Register()));
+                    widget.toggleView();
                   },
                   icon: Icon(
                     Icons.person,
@@ -103,14 +84,14 @@ class _SignInState extends State<SignIn> {
                           setState(() {
                             loading = true;
                           });
-                          dynamic result = await _auth
-                              .signInWithEmailAndPassword(email, password);
-                          if (result == null) {
-                            _showMyDialog(context);
-                            setState(() {
-                              loading = false;
-                            });
-                          }
+                              await _auth.signInWithEmailAndPassword(
+                            email,
+                            password,
+                            context,
+                          );
+                          setState(() {
+                            loading = false;
+                          });
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -121,7 +102,6 @@ class _SignInState extends State<SignIn> {
                         style: TextStyle(color: Colors.white),
                       ),
                     ),
-
                   ],
                 ),
               ),

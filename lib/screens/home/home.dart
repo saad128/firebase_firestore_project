@@ -1,14 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_internship_project/models/user_data_model.dart';
-import 'package:firebase_internship_project/models/user_model.dart';
-import 'package:firebase_internship_project/screens/authenticate/sign_in.dart';
 import 'package:firebase_internship_project/screens/home/setting_form.dart';
 import 'package:firebase_internship_project/services/database.dart';
 import 'package:firebase_internship_project/shared/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -46,13 +43,7 @@ class _HomeState extends State<Home> {
         actions: [
           TextButton.icon(
             onPressed: () async {
-              await FirebaseAuth.instance
-                  .signOut()
-                  .then((value) => Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SignIn(),
-                      )));
+              await FirebaseAuth.instance.signOut();
             },
             icon: Icon(
               Icons.logout,
