@@ -12,3 +12,7 @@ final textInputDecoration = InputDecoration(
     borderRadius: BorderRadius.circular(10.0),
   ),
 );
+
+class Constants{
+  static String myName = '';
+}

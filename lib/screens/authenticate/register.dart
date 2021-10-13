@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:firebase_internship_project/services/auth_service.dart';
+import 'package:firebase_internship_project/services/helperfunction.dart';
 import 'package:firebase_internship_project/shared/loading.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -230,6 +231,9 @@ class _RegisterState extends State<Register> {
                   onPressed: () async {
                     if (_formKey.currentState!.validate() && _dateTime
                         != null && pickedImage != null) {
+
+                      HelperFunction.saveUserNameSharedPreference(name);
+
                       setState(() {
                         loading = true;
                       });

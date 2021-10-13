@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_internship_project/models/user_data_model.dart';
+import 'package:firebase_internship_project/screens/home/chat_screen.dart';
 import 'package:firebase_internship_project/screens/home/setting_form.dart';
 import 'package:firebase_internship_project/services/database.dart';
+import 'package:firebase_internship_project/services/helperfunction.dart';
+import 'package:firebase_internship_project/shared/constants.dart';
 import 'package:firebase_internship_project/shared/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -16,6 +19,54 @@ class _HomeState extends State<Home> {
   DatabaseService _databaseService = DatabaseService();
 
   List<UserDataModel> userData = [];
+
+
+
+
+
+
+
+
+
+
+  String? userName;
+
+  @override
+  void initState() {
+    getUserInfo();
+    super.initState();
+  }
+
+  getUserInfo() async {
+    Constants.myName = (await HelperFunction.getUserNameSharedPreference())!;
+  }
+
+  Future<void> _showMyDialog(BuildContext context, String error) async {
+    return showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Error Message'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: [
+                  Text(error),
+                  //Text(error),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context, 'OK');
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +82,34 @@ class _HomeState extends State<Home> {
           );
         },
       );
+    }
+
+    getChatId(String a, String b) {
+      if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
+        return '$b\_$a';
+      } else {
+        return '$a\_$b';
+      }
+    }
+
+    createChatroomAndStartConversation({required String userName}) {
+      if (userName != Constants.myName) {
+        String chatRoomId = getChatId(userName, Constants.myName);
+        List<String> users = [userName, Constants.myName];
+        Map<String, dynamic> chatRoomMap = {
+          'users': users,
+          'chatId': chatRoomId,
+        };
+        _databaseService.createChatRoom(chatRoomId, chatRoomMap);
+
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ChatScreen(chatRoomId: chatRoomId,
+                    chatRoomName: userName,)));
+      } else {
+        return _showMyDialog(context, 'You cannot send message to yourself');
+      }
     }
 
     return Scaffold(
@@ -83,9 +162,9 @@ class _HomeState extends State<Home> {
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.active) {
             userData = snapshot.data;
-            return ListView.builder(
-                itemCount: userData.length,
-                itemBuilder: (context, index) {
+            return AnimatedList(
+                initialItemCount: userData.length,
+                itemBuilder: (context, index, animation) {
                   UserDataModel users = userData[index];
                   // userData = users;
                   Timestamp timestamp = users.date!;
@@ -93,19 +172,26 @@ class _HomeState extends State<Home> {
                     timestamp.toDate().toString(),
                   );
                   var userDate = DateFormat.yMMMd().format(dateTime);
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Card(
-                      margin: EdgeInsets.fromLTRB(20.0, 6.0, 20.0, 0),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          radius: 25.0,
-                          backgroundImage: NetworkImage(users.imagePicked!),
+
+                  userName = users.name!;
+                  return GestureDetector(
+                    onTap: () {
+                      createChatroomAndStartConversation(userName: users.name!);
+                    },
+                    child: Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Card(
+                          margin: EdgeInsets.fromLTRB(20.0, 6.0, 20.0, 0),
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              radius: 25.0,
+                              backgroundImage: NetworkImage(users.imagePicked!),
+                            ),
+                            title: Text(users.name!),
+                            subtitle: Text(userDate.toString()),
+                          ),
                         ),
-                        title: Text(users.name!),
-                        subtitle: Text(userDate.toString()),
                       ),
-                    ),
                   );
                 });
           } else {
@@ -114,7 +200,8 @@ class _HomeState extends State<Home> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
         label: Text('Search'),
         onPressed: () async {
           final result = await showSearch<UserDataModel>(
@@ -152,7 +239,6 @@ class SearchDelegateWidget extends SearchDelegate<UserDataModel> {
       icon: AnimatedIcon(
         icon: AnimatedIcons.menu_arrow,
         progress: transitionAnimation,
-
       ),
       onPressed: () {
         // close(context, userList.elementAt());
