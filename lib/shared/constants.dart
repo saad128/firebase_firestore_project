@@ -13,6 +13,6 @@ final textInputDecoration = InputDecoration(
   ),
 );
 
-class Constants{
-  static String myName = '';
-}
+// class Constants{
+//   static String myName = '';
+// }

@@ -9,8 +9,10 @@ class DatabaseService {
   final CollectionReference userCollection =
       FirebaseFirestore.instance.collection('users');
 
-  Future updateUserData(String name, DateTime date, String imagePicked) async {
+  Future updateUserData(String name, DateTime date, String
+  imagePicked) async {
     return await userCollection.doc(uid).set({
+      'userId': uid,
       'name': name,
       'date': date,
       'imagePicked': imagePicked,

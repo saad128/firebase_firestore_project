@@ -4,8 +4,6 @@ import 'package:firebase_internship_project/models/user_data_model.dart';
 import 'package:firebase_internship_project/screens/home/chat_screen.dart';
 import 'package:firebase_internship_project/screens/home/setting_form.dart';
 import 'package:firebase_internship_project/services/database.dart';
-import 'package:firebase_internship_project/services/helperfunction.dart';
-import 'package:firebase_internship_project/shared/constants.dart';
 import 'package:firebase_internship_project/shared/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -20,26 +18,17 @@ class _HomeState extends State<Home> {
 
   List<UserDataModel> userData = [];
 
-
-
-
-
-
-
-
-
-
   String? userName;
 
   @override
   void initState() {
-    getUserInfo();
+   // getUserInfo();
     super.initState();
   }
 
-  getUserInfo() async {
-    Constants.myName = (await HelperFunction.getUserNameSharedPreference())!;
-  }
+  // getUserInfo() async {
+  //   Constants.myName = (await HelperFunction.getUserNameSharedPreference())!;
+  // }
 
   Future<void> _showMyDialog(BuildContext context, String error) async {
     return showDialog<void>(
@@ -92,10 +81,11 @@ class _HomeState extends State<Home> {
       }
     }
 
-    createChatroomAndStartConversation({required String userName}) {
-      if (userName != Constants.myName) {
-        String chatRoomId = getChatId(userName, Constants.myName);
-        List<String> users = [userName, Constants.myName];
+    createChatroomAndStartConversation({required String userId}) {
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      if (userId != currentUser!.uid.toString()) {
+        String chatRoomId = getChatId(userId, currentUser.uid.toString());
+        List<String> users = [userId, currentUser.uid.toString()];
         Map<String, dynamic> chatRoomMap = {
           'users': users,
           'chatId': chatRoomId,
@@ -106,7 +96,7 @@ class _HomeState extends State<Home> {
               context,
               MaterialPageRoute(
                   builder: (context) => ChatScreen(chatRoomId: chatRoomId,
-                    chatRoomName: userName,)));
+                    chatRoomName: userName!,)));
       } else {
         return _showMyDialog(context, 'You cannot send message to yourself');
       }
@@ -176,7 +166,7 @@ class _HomeState extends State<Home> {
                   userName = users.name!;
                   return GestureDetector(
                     onTap: () {
-                      createChatroomAndStartConversation(userName: users.name!);
+                      createChatroomAndStartConversation(userId: users.uid.toString());
                     },
                     child: Padding(
                         padding: const EdgeInsets.only(top: 8.0),

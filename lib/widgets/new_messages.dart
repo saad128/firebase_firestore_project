@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_internship_project/screens/home/message_bubbles.dart';
 import 'package:firebase_internship_project/services/database.dart';
-import 'package:firebase_internship_project/shared/constants.dart';
 import 'package:flutter/material.dart';
 
 class NewMessages extends StatefulWidget {
@@ -16,8 +16,11 @@ class NewMessages extends StatefulWidget {
 class _NewMessagesState extends State<NewMessages> {
   DatabaseService _databaseService = DatabaseService();
 
+
   var _enteredMessage = '';
   final _controller = TextEditingController();
+  User? _currentUser = FirebaseAuth.instance.currentUser;
+
 
   Stream? chatMessagesStream;
 
@@ -31,7 +34,8 @@ class _NewMessagesState extends State<NewMessages> {
             reverse: true,
             itemBuilder: (context, index) {
               return MessageBubble(snapshot.data.docs[index]['message'],
-                  snapshot.data.docs[index]['sendBy'] == Constants.myName);
+                  snapshot.data.docs[index]['sendBy'] == _currentUser!.uid
+                      .toString());
             }) : Container();
       },
     );
@@ -42,7 +46,7 @@ class _NewMessagesState extends State<NewMessages> {
     if (_controller.text.isNotEmpty) {
       Map<String, dynamic> messageMap = {
         'message': _enteredMessage,
-        'sendBy': Constants.myName,
+        'sendBy': _currentUser!.uid.toString(),
         'time': Timestamp.now(),
       };
       _databaseService.addConversationMessage(widget.chatRoomId, messageMap);
